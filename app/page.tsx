@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Wallet, Coins, PieChart, ArrowLeftRight, Clock, DollarSign } from 'lucide-react';
+import { Wallet, Coins, PieChart, ArrowLeftRight, Clock, DollarSign, HelpCircle } from 'lucide-react';
 
 const AcalaPortfolioTracker = () => {
   const [address, setAddress] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showSpeakerNotes, setShowSpeakerNotes] = useState(false);
   
   const demoData = {
     totalValue: 1245.67,
@@ -33,8 +34,25 @@ const AcalaPortfolioTracker = () => {
     setIsConnected(true);
   };
   
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;
+  };
+  
+  // Function to get color based on retention value
+  const getColor = (value: number) => {
+    // Scale from light blue to dark blue based on retention percentage
+    const intensity = Math.floor((value / 100) * 255);
+    return `rgb(${255 - intensity}, ${255 - intensity}, 255)`;
+  };
+  
+  // Speaker notes for presentation
+  const speakerNotes: Record<string, string> = {
+    welcome: "Welcome to the Acala Portfolio Tracker demo. This application showcases how we can build intuitive interfaces on top of Acala's DeFi ecosystem.",
+    connect: "The first step for any DeFi application is wallet connection. Our app uses Polkadot.js to securely connect to the user's wallet without exposing private keys.",
+    overview: "The Overview tab provides a comprehensive look at the user's portfolio. It shows the total value of all assets and positions, along with individual token balances and their respective APYs.",
+    positions: "In the Positions tab, we display active DeFi positions like liquidity pools, staking, and loans. This helps users monitor their yield-generating activities and loan health.",
+    history: "The History tab shows recent transactions, giving users a clear audit trail of their DeFi activities. This transparency is essential for users to track their decision-making.",
+    architecture: "Behind the scenes, this app connects to the Acala blockchain using Polkadot.js API and Acala.js SDK. All data is fetched directly from the chain, ensuring accuracy and real-time updates."
   };
   
   const renderTabContent = () => {
@@ -135,17 +153,29 @@ const AcalaPortfolioTracker = () => {
   };
   
   return (
-    <div className="max-w-lg mx-auto bg-gray-50 rounded-lg shadow overflow-hidden">
-      <div className="bg-blue-600 p-4 text-white">
-        <h2 className="text-xl font-bold">Acala Portfolio Tracker</h2>
-        <p className="text-sm opacity-90">Track your DeFi assets across the Acala Network</p>
-      </div>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-lg bg-gray-50 rounded-lg shadow overflow-hidden relative">
+        <div className="bg-blue-600 p-4 text-white flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold">Acala Portfolio Tracker</h2>
+            <p className="text-sm opacity-90">Track your DeFi assets across the Acala Network</p>
+          </div>
+          <button 
+            onClick={() => setShowSpeakerNotes(!showSpeakerNotes)}
+            className="text-white hover:bg-blue-700 rounded-full p-1"
+            title="Toggle Speaker Notes"
+          >
+            <HelpCircle size={24} />
+          </button>
+        </div>
       
       {!isConnected ? (
         <div className="p-6 flex flex-col items-center justify-center">
           <Wallet size={48} className="text-blue-500 mb-4" />
           <h3 className="text-lg font-medium text-gray-800 mb-2">Connect your wallet</h3>
           <p className="text-gray-600 text-center mb-4">Connect your Polkadot wallet to view your Acala portfolio</p>
+          
+          {/* No local speaker notes needed since we have the fixed one now */}
           <input
             type="text"
             value={address}
@@ -172,6 +202,17 @@ const AcalaPortfolioTracker = () => {
             </div>
           </div>
           
+          {/* Speaker Notes Panel - Fixed positioning to ensure visibility */}
+          {showSpeakerNotes && (
+            <div className="fixed top-4 right-4 bg-yellow-50 border border-yellow-300 p-4 rounded-md shadow-lg w-64 z-50">
+              <h3 className="font-bold text-yellow-800 mb-2">Speaker Notes</h3>
+              <p className="text-sm text-yellow-800 mb-2">
+                {speakerNotes[activeTab as keyof typeof speakerNotes] || speakerNotes.welcome}
+              </p>
+              <p className="text-xs italic text-yellow-600 mt-2">Notes visible only during presentation. Toggle with ? icon.</p>
+            </div>
+          )}
+          
           <div className="flex border-b">
             <button
               className={`flex-1 py-3 px-4 text-center ${activeTab === 'overview' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
@@ -196,8 +237,11 @@ const AcalaPortfolioTracker = () => {
           <div className="p-4">
             {renderTabContent()}
           </div>
+          
+          {/* Removed bottom notes since we have the fixed one now */}
         </div>
       )}
+      </div>
     </div>
   );
 };
